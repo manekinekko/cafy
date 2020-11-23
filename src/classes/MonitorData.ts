@@ -1,0 +1,48 @@
+export class MonitorData {
+  static AKEY0 = 4;
+  static AKEY1 = 5;
+  static AKEY2 = 6;
+  static AKEY3 = 7;
+  static AKEY4 = 8;
+  static AKEY5 = 9;
+  static AKEY6 = 10;
+  static BEVERAGE_TYPE_DATA_1 = 13;
+  static BEVERAGE_TYPE_DATA_2 = 23;
+  static COFFEE_INFUSER_POS_LSB_DATA_0 = 12;
+  static COFFEE_INFUSER_POS_LSB_DATA_2 = 16;
+  static COFFEE_INFUSER_POS_MSB_DATA_0 = 11;
+  static COFFEE_INFUSER_POS_MSB_DATA_2 = 15;
+  static COFFEE_POWDER_QTY_LSB = 18;
+  static COFFEE_POWDER_QTY_MSB = 17;
+  static COFFEE_WASTE_COUNTER_DATA_1 = 14;
+  static COFFEE_WASTE_COUNTER_DATA_2 = 24;
+
+  static CURRENT_WATER_FLOW_LSB_DATA_0 = 14;
+  static CURRENT_WATER_FLOW_LSB_DATA_2 = 18;
+  static CURRENT_WATER_FLOW_MSB_DATA_0 = 13;
+  static CURRENT_WATER_FLOW_MSB_DATA_2 = 17;
+  static DATA_0 = 0;
+  static DATA_1 = 1;
+  static DATA_2 = 2;
+  static DIAG0_DATA_1 = 4;
+  static DIAG0_DATA_2 = 11;
+  static DIAG1_DATA_1 = 5;
+  static DIAG1_DATA_2 = 12;
+  static FUNCTION_EXECUTION_PROGRESS_DATA_1 = 9;
+  static FUNCTION_EXECUTION_PROGRESS_DATA_2 = 20;
+  static FUNCTION_ONGOING_DATA_1 = 8;
+  static FUNCTION_ONGOING_DATA_2 = 19;
+  static HEATER_TEMP_DATA_1 = 11;
+  static HEATER_TEMP_DATA_2 = 21;
+  static LOADS0_DATA_1 = 6;
+  static LOADS0_DATA_2 = 13;
+  static LOADS1_DATA_1 = 7;
+  static LOADS1_DATA_2 = 14;
+  static MACHINE_MODEL_ID = 10;
+  static MAIN_BOARD_SW_RELEASE = 15;
+  static REQUESTED_WATER_QTY_LSB = 16;
+  static REQUESTED_WATER_QTY_MSB = 15;
+  static STEAMER_TEMP_DATA_1 = 12;
+  static STEAMER_TEMP_DATA_2 = 22;
+  constructor(public dataN: number, public value: Int8Array) {}
+}
