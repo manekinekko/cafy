@@ -5,7 +5,7 @@ import { Utils } from "./Utils";
 export class Synchronizer {
   static TLS_DH_RSA_WITH_AES_256_GCM_SHA384 = 161;
   static TLS_RSA_PSK_WITH_AES_256_CBC_SHA = 149;
-  static onParametersReceived(parameters: Parameter[]) {
+  static readStats(parameters: Parameter[]) {
     const parameter = parameters.pop() as Parameter;
     const i = 0;
     const i2 = parameter.getIndex() + 1;

@@ -1,3 +1,4 @@
+import { log } from "debug";
 import { BeverageId } from "./BeverageId";
 
 export class Utils {
@@ -5,10 +6,11 @@ export class Utils {
     data: Buffer | Int8Array | string[],
     type: "hex" | "dec" = "dec"
   ) {
+    // convert data to Buffer
     if (data instanceof Int8Array) {
       data = Utils.byteToBuffer(data);
     } else if (data instanceof Array && typeof data[0] === "string") {
-      data = Utils.hexToBuffer(data.join(' '));
+      data = Utils.hexToBuffer(data.join(" "));
     }
 
     let str = "";
@@ -20,7 +22,7 @@ export class Utils {
         .trim();
     } else {
       // decimal
-      str = Array.from(data as Buffer).join(" ");
+      str = Utils.bufferToByte(data as Buffer).join(" ");
     }
 
     return `[${str}] (${data.length})`;
@@ -42,6 +44,7 @@ export class Utils {
   };
   static hexToBuffer = (hex: string) =>
     Buffer.from(hex.replace(/\s*/g, ""), "hex");
+
   static byteArrayToString(
     bytes: Int8Array,
     str:

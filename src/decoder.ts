@@ -1,4 +1,5 @@
 import debug from "debug";
+import { App } from "./classes/App";
 import { Appliance } from "./classes/Appliance";
 import { ApplianceManager } from "./classes/ApplianceManager";
 import { BeanSystem } from "./classes/BeanSystem";
@@ -9,6 +10,7 @@ import { Parameter } from "./classes/Parameter";
 import { ParameterModel } from "./classes/ParameterModel";
 import { RecipeData } from "./classes/RecipeData";
 import { RecipeDefaults } from "./classes/RecipeDefaults";
+import { Synchronizer } from "./classes/Synchronizer";
 import { Utils } from "./classes/Utils";
 const d = debug("Decoder");
 
@@ -16,7 +18,7 @@ const UByte = {
   MAX_VALUE: -1,
 };
 
-export function decode(app: any, bytes: Int8Array) {
+export function decode(app: App, bytes: Int8Array) {
   const EcamUpdatesReceived = {
     beverageSavingResult(...args: any[]) {
       d("EcamUpdatesReceived.beverageSavingResult", args);
@@ -48,9 +50,8 @@ export function decode(app: any, bytes: Int8Array) {
     async onParametersReceived(parameters: Parameter[]) {
       d(parameters.toString());
 
-      // await app.sendCommand(Synchronizer.loadSerialNumber(), async (chunk: Int8Array) => {
-      //   await app.machine?.characteristic?.writeAsync(Utils.buffer(chunk), true);
-      // });
+      // d("read stats");
+      // await app.sendCommand(Synchronizer.readStats(parameters));
     },
     onRequestTimeout(n: number) {
       d("EcamUpdatesReceived.onRequestTimeout", n);
@@ -65,11 +66,7 @@ export function decode(app: any, bytes: Int8Array) {
       d("EcamUpdatesReceived.onPrioritiesReceived", n);
     },
     onProfilesRecipeQuantitiesReceived(n: number, r: RecipeData) {
-      d(
-        "EcamUpdatesReceived.onProfilesRecipeQuantitiesReceived",
-        n,
-        r
-      );
+      d("EcamUpdatesReceived.onProfilesRecipeQuantitiesReceived", n, r);
     },
     onProfilesNamesWritten(n: number) {
       d("EcamUpdatesReceived.onProfilesNamesWritten", n);
@@ -553,7 +550,7 @@ function readProfiles(bytes: Int8Array) {
 
   const byteToInt = Utils.byteToInt(bytes[1]);
   const i = 4; // Bluethooth connection
-  const i2 = (byteToInt - (i + 1)) / 21;
+  const i2 = ((byteToInt - (i + 1)) / 21) | 0;
   const arrayList = new Array<string>(i2);
   const arrayList2 = new Array<number>(i2);
   for (let i3 = 0; i3 < i2; i3++) {

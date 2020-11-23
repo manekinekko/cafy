@@ -1,46 +1,76 @@
-import debug from "debug";
-const d = debug("App");
-
 import {
   Characteristic,
   on,
   Peripheral,
   startScanningAsync,
-  stopScanningAsync,
 } from "@abandonware/noble";
+import debug from "debug";
 import { commands } from "../commands";
 import { decode } from "../decoder";
 import { EcamManager } from "./EcamManager";
 import { Utils } from "./Utils";
+const d = debug("App");
 
 export class App {
   static SERVICE = "00035b03-58e6-07dd-021a-08123a000300";
   static CHARACTERISTIC = "00035b03-58e6-07dd-021a-08123a000301";
   static DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
-  healthCheckTimer: any;
+  private healthCheckTimer: any;
 
-  machine: {
+  private machine: {
     device?: Peripheral;
     characteristic?: Characteristic;
   } = {};
 
-  buffer = new Int8Array();
+  private readBuffer = new Int8Array();
+  private writeBuffer: Buffer = Buffer.from([]);
+
+  constructor() {
+    this.setupConnect();
+  }
 
   sendCommand(
+    id: string,
     data: string[] | Int8Array,
     callback?: Function | null,
-    timer = 1000
-  ) {
-    d("packets:         hex=", Utils.format(data, "hex"));
-    d("                 dec=", Utils.format(data, "dec"));
+    timer = 1000,
+    sendCommandRetries = 5
+  ): Promise<boolean> {
+    d("packets to send: id=", id);
+    d("                hex=", Utils.format(data, "hex"));
+    d("                dec=", Utils.format(data, "dec"));
 
-    return new Promise((res, rej) => {
+    return new Promise(async (resolve, reject) => {
+      if (!this.machine?.characteristic) {
+        d(
+          `Warning: Trying to send packets but connection is not ready. Retrying... (${sendCommandRetries--})`
+        );
+
+        if (sendCommandRetries <= 0) {
+          d("Abort");
+          await this.disconnect();
+          return;
+        }
+
+        setTimeout(
+          async () =>
+            await this.sendCommand(
+              id,
+              data,
+              callback,
+              timer,
+              sendCommandRetries
+            ),
+          1000
+        );
+      }
+
       let packetIndex = 0;
 
       // send the command in multiple chunks (if needed)
       let t = setInterval(async (_) => {
         try {
-          let packet;
+          let packet: Buffer;
           if (data instanceof Int8Array) {
             packet = Utils.byteToBuffer(data);
             packetIndex = data.length;
@@ -49,93 +79,134 @@ export class App {
           }
 
           if (callback) {
-            callback(packet);
+            await callback(packet);
           } else {
             await this.machine?.characteristic?.writeAsync(packet, true);
           }
 
-          d("packet sent:     hex=", Utils.format(packet, "hex"));
-          d("                 dec=", Utils.format(packet, "dec"));
+          this.writeBuffer = packet;
         } catch (err) {
-          rej(err);
+          reject(err);
         }
 
         if (packetIndex >= data.length) {
           clearInterval(t);
-          res(true);
+          resolve(true);
+        } else {
+          resolve(false);
         }
       }, timer);
     });
   }
 
-  async initialize() {
-    try {
-      on("stateChange", async (state: string) => {
-        if (state === "poweredOn") {
-          await startScanningAsync([App.SERVICE], false);
-        }
-      });
+  private async onStateChange(state: string) {
+    d("BLE: state=", state);
 
-      on("discover", async (peripheral: Peripheral) => {
-        this.machine.device = peripheral;
-
-        await stopScanningAsync();
-        await peripheral.connectAsync();
-        EcamManager.onMachineFound(peripheral, new Int8Array());
-
-        const {
-          characteristics,
-        } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(
-          [App.SERVICE],
-          [App.CHARACTERISTIC]
-        );
-        const characteristic = characteristics[0];
-        this.machine.characteristic = characteristic;
-        d("characteristic found", { uuid: characteristic.uuid });
-
-        characteristic.notify(true); // enable indication
-
-        // set callbacks
-        characteristic.on("data", this.onCharacteristicChanged.bind(this));
-      });
-
-      on("connect", () => d("connected"));
-      on("scanStart", () => d("scanning..."));
-      on("scanStop", () => d("scanning... done!"));
-      on("warning", (message: string) => d("WARNING", message));
-    } catch (error) {
-      await this.stopProcess();
+    if (state === "poweredOn") {
+      await startScanningAsync([App.SERVICE], false);
+    } else if (state === "disconnected") {
+      await this.disconnect();
     }
+  }
+
+  private async onDiscover(peripheral: Peripheral) {
+    this.machine.device = peripheral;
+
+    peripheral.on("connect", this.onPeripheralConnect.bind(this));
+    peripheral.on("disconnect", this.onPeripheralDisconnect.bind(this));
+
+    // await stopScanningAsync();
+    await peripheral.connectAsync();
+    EcamManager.onMachineFound(peripheral, new Int8Array());
+
+    const {
+      characteristics,
+    } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(
+      [App.SERVICE],
+      [App.CHARACTERISTIC]
+    );
+    const characteristic = characteristics[0];
+    this.machine.characteristic = characteristic;
+
+    const { uuid, type, properties } = characteristic;
+    d("characteristic found");
+    d(" - UUID      ", uuid);
+    d(" - Properties", properties);
+
+    characteristic.on("data", this.onCharacteristicData.bind(this));
+    characteristic.on("notify", this.onCharacteristicNotify.bind(this));
+    characteristic.on("read", this.onCharacteristicRead.bind(this));
+    characteristic.on("write", this.onCharacteristicWrite.bind(this));
+    characteristic.notify(true); // enable indication
+  }
+
+  private onPeripheralConnect() {
+    d("BLE: device found");
+  }
+
+  private onPeripheralDisconnect() {
+    d("BLE: disconnected");
+  }
+
+  private onScanStart() {
+    d("BLE: scanning...");
+  }
+
+  private onScanStop() {
+    d("BLE: scanning... done!");
+  }
+
+  private setupConnect() {
+    d("BLE: activating...");
+
+    on("stateChange", this.onStateChange.bind(this));
+    on("discover", this.onDiscover.bind(this));
+    on("scanStart", this.onScanStart.bind(this));
+    on("scanStop", this.onScanStop.bind(this));
+
+    process.on("SIGINT", this.disconnect.bind(this));
+    process.on("uncaughtException", this.disconnect.bind(this));
+    process.on("SIGUSR1", this.disconnect.bind(this));
+    process.on("SIGUSR2", this.disconnect.bind(this));
   }
 
   // callbacks
 
-  async onCharacteristicChanged(value: Int8Array, isNotification: boolean) {
-    // read from peripheral
-
-    const buffer2 = new Int8Array(this.buffer.length + value.length);
-    buffer2.set(this.buffer);
-    buffer2.set(value, this.buffer.length);
-
-    this.buffer = Int8Array.from(buffer2);
-
-    if (this.isResponseComplete(this.buffer)) {
-      // d("data", "completed", buffer.length, runChecksum(buffer));
-      d("packet received: hex=", Utils.format(this.buffer, "hex"));
-      d("                 dec=", Utils.format(this.buffer, "dec"));
-
-      decode(this, this.buffer);
-
-      // reset buffer
-      this.buffer = new Int8Array();
-    }
+  onCharacteristicNotify(..._args: any[]) {}
+  onCharacteristicRead(data: Buffer, _isNotify: boolean) {
+    d("chunk received: hex=", Utils.format(data, "hex"));
+    d("                dec=", Utils.format(data, "dec"));
+  }
+  onCharacteristicWrite() {
+    d("packet sent:    hex=", Utils.format(this.writeBuffer, "hex"));
+    d("                dec=", Utils.format(this.writeBuffer, "dec"));
   }
 
-  isResponseComplete(bytes: Int8Array) {
+  async onCharacteristicData(value: Int8Array, _isNotification: boolean) {
+    // read from peripheral
+
+    const buffer2 = new Int8Array(this.readBuffer.length + value.length);
+    buffer2.set(this.readBuffer);
+    buffer2.set(value, this.readBuffer.length);
+
+    this.readBuffer = Int8Array.from(buffer2);
+
+    if (this.isResponseComplete(this.readBuffer)) {
+      // d("data", "completed", buffer.length, runChecksum(buffer));
+      d("response ready: hex=", Utils.format(this.readBuffer, "hex"));
+      d("                dec=", Utils.format(this.readBuffer, "dec"));
+
+      decode(this, this.readBuffer);
+
+      // reset buffer
+      this.readBuffer = new Int8Array();
+    }
+  }
+  private isResponseComplete(bytes: Int8Array) {
     return bytes.length >= 2 && Utils.byteToInt(bytes[1]) == bytes.length - 1;
   }
 
-  async stopProcess() {
+  async disconnect() {
     try {
       d("disconnecting...");
       clearInterval(this.healthCheckTimer);
@@ -143,7 +214,6 @@ export class App {
       await this.machine.characteristic?.notify(false);
       await this.machine.characteristic?.unsubscribe();
       await this.machine.device?.disconnectAsync();
-      d("disconnected");
     } catch (error) {}
     process.exit(0);
   }
@@ -151,16 +221,23 @@ export class App {
   // commands
 
   async machineStatus() {
-    d("command: machine_status");
-
-    await this.sendCommand(commands.machine_status);
+    await this.sendCommand("machine_status", commands.machine_status);
   }
 
-  async heathCheck() {
+  async heathCheck(): Promise<App> {
     this.healthCheckTimer = setInterval(async () => {
-      d("command: health_check");
-
-      await this.sendCommand(commands.health_check, null, 500);
+      await this.sendCommand("health_check", commands.health_check, null, 500);
     }, 5000);
+
+    return this;
+  }
+
+  async sync(): Promise<App> {
+    d("command: sync");
+
+    await this.sendCommand("get_parameters", commands.get_parameters);
+    await this.sendCommand("machine_status", commands.machine_status);
+    await this.sendCommand("get_profiles", commands.get_profiles);
+    return this;
   }
 }

@@ -1,15 +1,16 @@
 export const commands = {
   get_parameters: ["0d 08 95 0f 00 d2 01 4d 6d"],
-  turn_on: [
-    "0d 07 84 0f 02 01 55 12",
-    "0d 07 84 0f 02 01 55 12",
-    "0d 07 84 0f 02 01 55 12",
-    "0d 07 84 0f 02 01 55 12",
-    "0d 07 84 0f 02 01 55 12",
-    "0d 07 84 0f 02 01 55 12",
-  ],
+  turn_on: ["0d 07 84 0f 02 01 55 12"],
   health_check: ["0d 05 75 0f da 25"],
+  get_profiles: ["0d 05 a3 f0 7b 54"],
   machine_status: ["0d 08 95 0f 00 32 01 5d df", "0d 08 95 0f 00 3f 01 2b 83"],
+
+  use_profile_1: ["0d 06 a9 f0 01 d7 c0"],
+  use_profile_2: ["0d 06 a9 f0 02 e7 a3"],
+  use_profile_3: ["0d 06 a9 f0 03 f7 82"],
+  use_profile_4: ["0d 06 a9 f0 04 87 65"],
+  use_profile_5: ["0d 06 a9 f0 05 97 44"],
+  use_profile_6: ["0d 06 a9 f0 06 a7 27"],
 
   settings_cup_lighting_on: ["0d 0b 90 0f 00 3f 00 00 00 99 39 22"],
   settings_cup_lighting_off: ["0d 0b 90 0f 00 3f 00 00 00 91 b8 2a"],

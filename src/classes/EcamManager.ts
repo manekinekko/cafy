@@ -39,14 +39,11 @@ export class EcamManager {
   static SET_TIME_ANSWER = -30;
   static STATISTICS_READ_ANSWER_ID = -94;
   static addEcamMachine(address: string, name: string) {
-    d("machine added");
+    d("machine added", {address, name});
   }
 
   static onMachineFound(device: Peripheral, bytes: Int8Array) {
-    d("Ecam Machine found", {
-      name: device.advertisement.localName,
-      address: device.address,
-    });
+    d("machine found");
 
     EcamManager.addEcamMachine(
       device.address,

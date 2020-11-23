@@ -70,38 +70,34 @@ export class MachineSwitch {
 
   static getSwithById(id: number) {
     switch (id) {
-      case 0:
-        return "WATER_SPOUT";
       case 1:
-        return "IGNORE_SWITCH";
+        return "Insert water spout";
       case 2:
-        return "IGNORE_SWITCH";
+        return "-";
       case 3:
-        return "COFFEE_WASTE_CONTAINER";
+        return "-";
       case 4:
-        return "WATER_TANK_ABSENT";
+        return "Insert ground container";
       case 5:
-        return "KNOB";
+        return "Insert water tank";
       case 6:
-        return "IGNORE_SWITCH";
+        return "-";
       case 7:
-        return "COFFEE_JUG";
+        return "Fill tank with fresh water";
       case 8:
-        return "IFD_CARAFFE";
+        return "-";
       case 9:
-        return "CIOCCO_TANK";
+        return "Insert milk container";
       case 10:
-        return "CLEAN_KNOB";
-      case 11:
-        return "IGNORE_SWITCH";
+        return "Insert chocolate carafe";
       case 12:
-        return "IGNORE_SWITCH";
+        return "Close front door";
       case 13:
-        return "DOOR_OPENED";
-      case 14:
-        return "PREGROUND_DOOR_OPENED";
+        return "Pre-ground lid open";
+      case 15:
+        return "-";
       default:
-        return "UNKNOWN_SWITCH";
+        return "Set dial to CLEAN";
     }
   }
 }
