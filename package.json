@@ -1,6 +1,6 @@
 {
   "name": "@manekinekko/cafy",
-  "version": "1.0.0",
+  "version": "1.0.1-alpha.0",
   "description": "An experimental Node.js package to interact with the Primadonna Elite coffee machine (and probably other ECAM models), using the Bluetooth Low Energy protocol.",
   "main": "index.js",
   "scripts": {
