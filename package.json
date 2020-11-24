@@ -6,6 +6,7 @@
   "scripts": {
     "start": "npm run build && DEBUG=*,-noble node dist/index.js",
     "build": "tsc",
+    "test": "jest --detectOpenHandles --forceExit",
     "clean": "rm -fr dist tsconfig.tsbuildinfo",
     "format": "npx prettier --write .",
     "prepare": "npm run build",
@@ -21,19 +22,22 @@
   "license": "MIT",
   "dependencies": {
     "@abandonware/noble": "^1.9.2-10",
-    "debug": "^4.3.1",
-    "typescript": "^4.0.5"
+    "debug": "^4.3.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-angular": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@types/debug": "^4.1.5",
+    "@types/jest": "^26.0.15",
     "@types/node": "^14.14.9",
     "husky": "^4.3.0",
+    "jest": "^26.6.3",
     "lint-staged": "^10.5.1",
     "prettier": "2.2.0",
-    "release-it": "^14.2.1"
+    "release-it": "^14.2.1",
+    "ts-jest": "^26.4.4",
+    "typescript": "^4.1.2"
   },
   "repository": {
     "type": "git",
