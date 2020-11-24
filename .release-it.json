@@ -14,7 +14,7 @@
   "github": {
     "release": true,
     "preRelease": true,
-    "releaseName": "Cafy ${version}",
+    "releaseName": "${version}",
     "draft": false,
     "tokenRef": "GITHUB_TOKEN"
   },
