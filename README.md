@@ -6,6 +6,14 @@ I own a Primadonna Elite (ECAM65075MS) and I created this app for my personal us
 
 The code is provided “as is”, without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall I (Wassim Chegham) or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the code or the use or other dealings in the code.
 
+# Prerequisites
+
+You will need:
+- [Node v15 and npm](https://nodejs.org/en/download/current/)
+- [the git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) command line
+- [Code editor and a terminal](https://code.visualstudio.com/?WT.mc_id=javascript-00000-wachegha)
+- Make sure your computer has a Bluetooth adapter that supports [BLE](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy).
+
 # Getting Started
 
 1. `git clone https://github.com/manekinekko/node-ecam-coffee.git`
