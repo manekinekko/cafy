@@ -35,6 +35,14 @@
     "prettier": "2.2.0",
     "release-it": "^14.2.1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manekinekko/cafy.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manekinekko/cafy/issues"
+  },
+  "homepage": "https://github.com/manekinekko/cafy#readme",
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
