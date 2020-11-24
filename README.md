@@ -1,6 +1,8 @@
-## Disclaimer
+## Cafy
 
 This is an experimental Node.js app to interact with the Primadonna Elite (ECAM65075MS) coffee smart machines (and probably other ECAM models), using the Bluetooth Low Energy (BLE) protocol.
+
+### Disclaimer
 
 I own a Primadonna Elite (ECAM65075MS) and I created this app for my personal use. **The code shared in this project is for educational purposes only.**
 
@@ -81,3 +83,24 @@ This project is still under development. Most of the work is being invested in u
 | Profiles                      | TODO                  |
 | "My" Custom Beverage settings | TODO                  |
 | Decoding machine responses    | [WIP](src/decoder.ts) |
+
+## Troubleshooting
+
+#### Running on Linux/RPi (EPERM, Operation not permitted)
+
+If you get the following error:
+
+```
+hci onSocketError: EPERM, Operation not permitted
+noble warning: adapter state unauthorized, please run as root or with sudo
+               or see README for information on running without root/sudo:
+               https://github.com/sandeepmistry/noble#running-on-linux
+```
+
+You need toapply the following command:
+
+```
+sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
+```
+
+More info here: https://github.com/noble/noble#running-on-linux
