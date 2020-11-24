@@ -1,3 +1,5 @@
+jest.mock("@abandonware/noble");
+
 import { App } from "./classes";
 
 jest.spyOn(process, "exit").mockImplementation();
