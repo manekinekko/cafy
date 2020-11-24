@@ -11,6 +11,7 @@ The code is provided “as is”, without warranty of any kind, express or impli
 # Prerequisites
 
 You will need:
+
 - [Node v15 and npm](https://nodejs.org/en/download/current/)
 - [the git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) command line
 - [Code editor and a terminal](https://code.visualstudio.com/?WT.mc_id=javascript-00000-wachegha)

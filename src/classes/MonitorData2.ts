@@ -276,7 +276,8 @@ export class MonitorData2 {
       ];
     }
     d(
-      "isAlarmActive: " + Utils.bufferToHex(Utils.byteToBuffer(new Int8Array([b])))
+      "isAlarmActive: " +
+        Utils.bufferToHex(Utils.byteToBuffer(new Int8Array([b])))
     );
     if (((b >> machineAlarm.getBitIndex()) & 1) != 0) {
       z = true;
@@ -482,7 +483,9 @@ export class MonitorData2 {
       - MainBoardSwRelease    = ${this.getMainBoardSwRelease()}
       - OnLoads               = ${this.getOnLoads()}
       - OnSwitches            = ${this.getOnSwitches()}
-      - OnSwitchesToShowUser  = ${this.getOnSwitchesToShowUser()?.map(MachineSwitch.getSwithById)}
+      - OnSwitchesToShowUser  = ${this.getOnSwitchesToShowUser()?.map(
+        MachineSwitch.getSwithById
+      )}
       - PressedKeys           = ${this.getPressedKeys()}
       - RequestedWaterQty     = ${this.getRequestedWaterQty()}
       - SteamerTemp           = ${this.getSteamerTemp()}

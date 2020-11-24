@@ -19,6 +19,6 @@
     "tokenRef": "GITHUB_TOKEN"
   },
   "npm": {
-    "publish": true
+    "publish": false
   }
 }

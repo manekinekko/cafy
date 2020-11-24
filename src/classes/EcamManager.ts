@@ -1,5 +1,5 @@
 import debug from "debug";
-const d = debug('EcamManager');
+const d = debug("EcamManager");
 
 import { Peripheral } from "@abandonware/noble";
 
@@ -39,15 +39,12 @@ export class EcamManager {
   static SET_TIME_ANSWER = -30;
   static STATISTICS_READ_ANSWER_ID = -94;
   static addEcamMachine(address: string, name: string) {
-    d("machine added", {address, name});
+    d("machine added", { address, name });
   }
 
   static onMachineFound(device: Peripheral, bytes: Int8Array) {
     d("machine found");
 
-    EcamManager.addEcamMachine(
-      device.address,
-      device.advertisement.localName
-    );
+    EcamManager.addEcamMachine(device.address, device.advertisement.localName);
   }
 }

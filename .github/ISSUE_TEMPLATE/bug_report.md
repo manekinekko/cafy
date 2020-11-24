@@ -1,10 +1,9 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: ''
+title: ""
+labels: ""
 assignees: manekinekko
-
 ---
 
 **Describe the bug**
@@ -16,6 +15,7 @@ Hardware: Raspberry pi 3
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
