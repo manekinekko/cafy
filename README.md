@@ -21,11 +21,20 @@ You will need:
 1. `npm install`
 1. `npm start`
 
-## Sending commands
+## Sending commands (WIP)
+
+For the time being, you can just edit the [index.ts](src/index.ts) file. We will provide a cleaner public API in the future.
 
 ```typescript
-const app = new App();
-await app.sendCommand(["0d 08 83 f0 02 02 06 c4 b1"]);
+import { App } from "./classes";
+
+(async function () {
+  let app = new App();
+  await app.sendCommand(["0d 08 83 f0 02 02 06 c4 b1"]);
+})();
+
+> NOTE: you will need to rebuild your code (`npm start`) every time you change a file under [src](src/) folder.
+
 ```
 
 ## Project Status
