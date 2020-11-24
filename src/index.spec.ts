@@ -1,3 +1,4 @@
+jest.mock("@abandonware/bluetooth-hci-socket");
 jest.mock("@abandonware/noble");
 
 import { App } from "./classes";
