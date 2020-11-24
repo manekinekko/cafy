@@ -16,7 +16,11 @@
     "coffee-machine",
     "iot",
     "ble",
-    "nodejs"
+    "nodejs",
+    "bluetooth",
+    "bluetooth low energy",
+    "bluetooth smart",
+    "central"
   ],
   "author": "Wassim Chegham <github@wassim.dev>",
   "license": "MIT",
@@ -45,6 +49,9 @@
   },
   "bugs": {
     "url": "https://github.com/manekinekko/cafy/issues"
+  },
+  "engines": {
+    "node": ">=14"
   },
   "homepage": "https://github.com/manekinekko/cafy#readme",
   "husky": {
