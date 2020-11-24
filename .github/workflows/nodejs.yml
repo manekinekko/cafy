@@ -30,7 +30,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          name: package
+          name: package-pr-${{github.event.number}}
           path: "*.tgz"
 
   publish:
@@ -42,13 +42,13 @@ jobs:
       - name: Upload
         uses: actions/download-artifact@v2
         with:
-          name: package
+          name: package-pr-${{github.event.number}}
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: https://npm.pkg.github.com/
           scope: "@manekinekko"
       - run: echo "registry=https://npm.pkg.github.com/@manekinekko" >> .npmrc
-      - run: npm publish $(ls *.tgz)
+      - run: npm publish $(ls *.tgz) --tag=pr-${{github.event.number}} --access=public
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
