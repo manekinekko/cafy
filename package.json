@@ -11,7 +11,8 @@
     "clean": "rm -fr dist tsconfig.tsbuildinfo",
     "format": "npx prettier --write .",
     "release": "release-it --preRelease=alpha",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "inspect": "npm run build && node dist/inspect.js"
   },
   "keywords": [
     "coffee-machine",
