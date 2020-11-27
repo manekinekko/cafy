@@ -77,7 +77,7 @@ export class MonitorData2 {
   }
 
   getPressedKeys() {
-    if (this.dataN == 1) {
+    if (this.dataN == MonitorData2.DATA_1) {
       return null;
     }
     const arrayList = new Array<number>();
@@ -102,7 +102,7 @@ export class MonitorData2 {
 
   isKeyPressed(machineKey: MachineKey) {
     if (
-      this.dataN == 1 ||
+      this.dataN == MonitorData2.DATA_1 ||
       ((this.value[machineKey.getAkey() + 4] >> machineKey.getBitIndex()) &
         1) ==
         0
@@ -114,7 +114,7 @@ export class MonitorData2 {
 
   getOnSwitches() {
     let i = 1;
-    if (this.dataN == 1) {
+    if (this.dataN == MonitorData2.DATA_1) {
       return null;
     }
     const arrayList = new Array<number>();
@@ -133,7 +133,7 @@ export class MonitorData2 {
 
   getOnSwitchesToShowUser() {
     let i = 1;
-    if (this.dataN == 1) {
+    if (this.dataN == MonitorData2.DATA_1) {
       return null;
     }
     const arrayList = new Array<number>();
@@ -173,7 +173,7 @@ export class MonitorData2 {
 
   isSwitchOn(machineSwitch: MachineSwitch) {
     if (
-      this.dataN == 1 ||
+      this.dataN == MonitorData2.DATA_1 ||
       ((this.value[machineSwitch.getAkey() + 5] >>
         machineSwitch.getBitIndex()) &
         1) ==
@@ -186,28 +186,28 @@ export class MonitorData2 {
 
   getCoffeeInfuserPos() {
     const i = this.dataN;
-    if (i == 1) {
+    if (i == MonitorData2.DATA_1) {
       return -1;
     }
-    const c = i == 0 ? 12 : 16;
-    const c2 = this.dataN == 2 ? 11 : 15;
+    const c = i == MonitorData2.DATA_0 ? 12 : 16;
+    const c2 = i == MonitorData2.DATA_2 ? 11 : 15;
     const bytes = this.value;
     return bytes[c] + (bytes[c2] << 8);
   }
 
   getWaterFlowQty() {
     const i = this.dataN;
-    if (i == 1) {
+    if (i == MonitorData2.DATA_1) {
       return -1;
     }
-    const c = i == 0 ? 14 : 18;
-    const c2 = this.dataN == 2 ? 13 : 17;
+    const c = i == MonitorData2.DATA_0 ? 14 : 18;
+    const c2 = i == MonitorData2.DATA_2 ? 13 : 17;
     const bytes = this.value;
     return bytes[c2] + (bytes[c] << 8);
   }
 
   getRequestedWaterQty() {
-    if (this.dataN != 1) {
+    if (this.dataN != MonitorData2.DATA_1) {
       return -1;
     }
     const bytes = this.value;
@@ -215,7 +215,7 @@ export class MonitorData2 {
   }
 
   getCoffeePowderQty() {
-    if (this.dataN != 1) {
+    if (this.dataN != MonitorData2.DATA_1) {
       return -1;
     }
     const bytes = this.value;
@@ -223,14 +223,19 @@ export class MonitorData2 {
   }
 
   getActiveAlarms() {
-    if (this.dataN == 0) {
+    if (this.dataN == MonitorData2.DATA_0) {
       return null;
     }
     const arrayList = new Array<number>();
     let i = 1;
     const unsignedIntFromByte =
-      Utils.getUnsignedIntFromByte(this.value[this.dataN == 1 ? 4 : 7]) +
-      (Utils.getUnsignedIntFromByte(this.value[this.dataN == 1 ? 5 : 8]) << 8) +
+      Utils.getUnsignedIntFromByte(
+        this.value[this.dataN == MonitorData2.DATA_1 ? 4 : 7]
+      ) +
+      (Utils.getUnsignedIntFromByte(
+        this.value[this.dataN == MonitorData2.DATA_1 ? 5 : 8]
+      ) <<
+        8) +
       (Utils.getUnsignedIntFromByte(this.value[12]) << 16) +
       (Utils.getUnsignedIntFromByte(this.value[13]) << 24);
     let i2 = 0;
@@ -256,10 +261,10 @@ export class MonitorData2 {
     let b = null;
     const i = this.dataN;
     let z = false;
-    if (i == 0) {
+    if (i == MonitorData2.DATA_0) {
       return false;
     }
-    if (i == 1) {
+    if (i == MonitorData2.DATA_1) {
       b = this.value[machineAlarm.getDiag() + 4];
     } else {
       const diag = machineAlarm.getDiag();
@@ -276,8 +281,8 @@ export class MonitorData2 {
       ];
     }
     d(
-      "isAlarmActive: " +
-        Utils.bufferToHex(Utils.byteToBuffer(new Int8Array([b])))
+      "isAlarmActive: ",
+      Utils.bufferToHex(Utils.byteToBuffer(new Int8Array([b])))
     );
     if (((b >> machineAlarm.getBitIndex()) & 1) != 0) {
       z = true;
@@ -289,12 +294,12 @@ export class MonitorData2 {
   }
 
   getOnLoads() {
-    if (this.dataN == 0) {
+    if (this.dataN == MonitorData2.DATA_0) {
       return null;
     }
     const arrayList = new Array<number>();
-    const c = this.dataN == 1 ? 6 : 13;
-    const c2 = this.dataN == 1 ? 7 : 14;
+    const c = this.dataN == MonitorData2.DATA_1 ? 6 : 13;
+    const c2 = this.dataN == MonitorData2.DATA_1 ? 7 : 14;
     const bytes = this.value;
     const i = bytes[c] + (bytes[c2] << 8);
     let i2 = 32768;
@@ -311,11 +316,13 @@ export class MonitorData2 {
 
   isLoadOn(machineLoad: MachineLoad) {
     const i = this.dataN;
-    if (i == 0) {
+    if (i == MonitorData2.DATA_0) {
       return false;
     }
     if (
-      ((this.value[(i == 1 ? 6 : 13) + machineLoad.getLoad()] >>
+      ((this.value[
+        (i == MonitorData2.DATA_1 ? 6 : 13) + machineLoad.getLoad()
+      ] >>
         machineLoad.getBitIndex()) &
         1) !=
       0
@@ -327,10 +334,10 @@ export class MonitorData2 {
 
   getFunctionOngoing() {
     const i = this.dataN;
-    if (i == 0) {
+    if (i == MonitorData2.DATA_0) {
       return -1;
     }
-    const i2 = i == 1 ? 8 : 9;
+    const i2 = i == MonitorData2.DATA_1 ? 8 : 9;
     const bytes = this.value;
     if (bytes.length > i2) {
       return Utils.byteToInt(bytes[i2]);
@@ -340,10 +347,10 @@ export class MonitorData2 {
 
   getFunctionExecutionProgress() {
     const i = this.dataN;
-    if (i == 0) {
+    if (i == MonitorData2.DATA_0) {
       return -1;
     }
-    const i2 = i == 1 ? 9 : 10;
+    const i2 = i == MonitorData2.DATA_1 ? 9 : 10;
     const bytes = this.value;
     if (bytes.length > i2) {
       return Utils.byteToInt(bytes[i2]);
@@ -352,7 +359,7 @@ export class MonitorData2 {
   }
 
   getMachineModelId() {
-    if (this.dataN != 1) {
+    if (this.dataN != MonitorData2.DATA_1) {
       return -1;
     }
     return this.value[10];
@@ -360,10 +367,10 @@ export class MonitorData2 {
 
   getHeaterTemp() {
     const i = this.dataN;
-    if (i == 0) {
+    if (i == MonitorData2.DATA_0) {
       return -1;
     }
-    const b = this.value[i == 1 ? 11 : 21];
+    const b = this.value[i == MonitorData2.DATA_1 ? 11 : 21];
     if (b < 0) {
       return 0;
     }
@@ -372,10 +379,10 @@ export class MonitorData2 {
 
   getSteamerTemp() {
     const i = this.dataN;
-    if (i == 0) {
+    if (i == MonitorData2.DATA_0) {
       return -1;
     }
-    const b = this.value[i == 1 ? 12 : 22];
+    const b = this.value[i == MonitorData2.DATA_1 ? 12 : 22];
     if (b < 0) {
       return 0;
     }
@@ -384,31 +391,31 @@ export class MonitorData2 {
 
   getBeverageType() {
     const i = this.dataN;
-    if (i == 0) {
+    if (i == MonitorData2.DATA_0) {
       return null;
     }
-    const b = this.value[i == 1 ? 13 : 23];
-    d("Beverage id: " + BeverageId[b]);
+    const b = this.value[i == MonitorData2.DATA_2 ? 13 : 23];
+    d("Beverage id: ", b, BeverageId[b]);
     return BeverageId[b];
   }
 
   getCoffeeWasteCounter() {
     const i = this.dataN;
-    if (i == 0) {
+    if (i == MonitorData2.DATA_0) {
       return -1;
     }
-    return this.value[i == 1 ? 14 : 24];
+    return this.value[i == MonitorData2.DATA_1 ? 14 : 24];
   }
 
   getMainBoardSwRelease() {
-    if (this.dataN == 0) {
+    if (this.dataN == MonitorData2.DATA_0) {
       return -1;
     }
     return this.value[15];
   }
 
   getDispensingPercentage() {
-    if (this.dataN != 2) {
+    if (this.dataN != MonitorData2.DATA_2) {
       return -1;
     }
     return Utils.byteToInt(this.value[11]);
@@ -416,7 +423,7 @@ export class MonitorData2 {
 
   isReadyToWork() {
     if (
-      this.dataN != 0 &&
+      this.dataN != MonitorData2.DATA_0 &&
       this.getFunctionOngoing() == 7 &&
       this.getFunctionExecutionProgress() == 0
     ) {
@@ -426,42 +433,45 @@ export class MonitorData2 {
   }
 
   isInStandBy() {
-    if (this.dataN == 0 || this.getFunctionOngoing() != 0) {
+    if (this.dataN == MonitorData2.DATA_0 || this.getFunctionOngoing() != 0) {
       return false;
     }
     return true;
   }
 
   isTurningOn() {
-    if (this.dataN == 0 || this.getFunctionOngoing() != 1) {
+    if (this.dataN == MonitorData2.DATA_0 || this.getFunctionOngoing() != 1) {
       return false;
     }
     return true;
   }
 
   isShuttingDown() {
-    if (this.dataN == 0 || this.getFunctionOngoing() != 2) {
+    if (this.dataN == MonitorData2.DATA_0 || this.getFunctionOngoing() != 2) {
       return false;
     }
     return true;
   }
 
   isShutDown() {
-    if (this.dataN == 0 || this.getFunctionOngoing() != 0) {
+    if (this.dataN == MonitorData2.DATA_0 || this.getFunctionOngoing() != 0) {
       return false;
     }
     return true;
   }
 
   isAccessoryPresent(i: number) {
-    if (this.dataN != 1 && Utils.byteToInt(this.value[4]) == i) {
+    if (
+      this.dataN != MonitorData2.DATA_1 &&
+      Utils.byteToInt(this.value[4]) == i
+    ) {
       return true;
     }
     return false;
   }
 
   getAccessoryPresent() {
-    if (this.dataN == 1) {
+    if (this.dataN == MonitorData2.DATA_1) {
       return -1;
     }
     return Utils.byteToInt(this.value[4]);
@@ -469,7 +479,13 @@ export class MonitorData2 {
 
   toString() {
     return `
-    MonitorData2:
+    Status:
+      - InStandBy             = ${this.isInStandBy()}
+      - TurningOn             = ${this.isTurningOn()}
+      - ReadyToWork           = ${this.isReadyToWork()}
+      - ShuttingDown          = ${this.isShuttingDown()}
+      - ShutDown              = ${this.isShutDown()}
+      -------------------------
       - AccessoryPresent      = ${this.getAccessoryPresent()}
       - ActiveAlarms          = ${this.getActiveAlarms()}
       - BeverageType          = ${this.getBeverageType()}
@@ -491,7 +507,7 @@ export class MonitorData2 {
       - SteamerTemp           = ${this.getSteamerTemp()}
       - Timestamp             = ${this.getTimestamp()}
       - Type                  = ${this.getType()}
-      - Value                 = ${this.getValue()}
+      - Value                 = ${Utils.format(this.getValue(), "hex")}
       - WaterFlowQty          = ${this.getWaterFlowQty()}
     `;
   }
