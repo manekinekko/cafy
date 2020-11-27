@@ -1,14 +1,14 @@
-import { App } from "./classes";
+import { Cafy } from "./classes";
 
 jest.spyOn(process, "exit").mockImplementation();
 
-let app: App;
+let app: Cafy;
 
 afterAll(() => {
   app.disconnect();
 });
 
 test("App should initialize without errors", async () => {
-  app = new App();
+  app = new Cafy();
   expect(app).toBeTruthy();
 });

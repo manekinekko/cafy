@@ -9,9 +9,9 @@ import { commands } from "../commands";
 import { decode } from "../decoder";
 import { EcamManager } from "./EcamManager";
 import { Utils } from "./Utils";
-const d = debug("App");
+const d = debug("Cafy");
 
-export class App {
+export class Cafy {
   static SERVICE = "00035b03-58e6-07dd-021a-08123a000300";
   static CHARACTERISTIC = "00035b03-58e6-07dd-021a-08123a000301";
   static DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb";
@@ -103,8 +103,8 @@ export class App {
     d("BLE: state=", state);
 
     if (state === "poweredOn") {
-      await startScanningAsync([App.SERVICE], false);
-    } else if (state === "disconnected") {
+      await startScanningAsync([Cafy.SERVICE], false);
+    } else if (state === "disconnected" || state === "poweredOff") {
       await this.disconnect();
     }
   }
@@ -122,8 +122,8 @@ export class App {
     const {
       characteristics,
     } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(
-      [App.SERVICE],
-      [App.CHARACTERISTIC]
+      [Cafy.SERVICE],
+      [Cafy.CHARACTERISTIC]
     );
     const characteristic = characteristics[0];
     this.machine.characteristic = characteristic;
@@ -156,8 +156,10 @@ export class App {
     d("BLE: scanning... done!");
   }
 
-  private setupConnect() {
+  private async setupConnect() {
     d("BLE: activating...");
+
+    this.machine.characteristic?.removeAllListeners();
 
     on("stateChange", this.onStateChange.bind(this));
     on("discover", this.onDiscover.bind(this));
@@ -193,7 +195,7 @@ export class App {
 
     if (this.isResponseComplete(this.readBuffer)) {
       // d("data", "completed", buffer.length, runChecksum(buffer));
-      d("response ready: hex=", Utils.format(this.readBuffer, "hex"));
+      d("packet ready:   hex=", Utils.format(this.readBuffer, "hex"));
       d("                dec=", Utils.format(this.readBuffer, "dec"));
 
       decode(this, this.readBuffer);
@@ -208,14 +210,14 @@ export class App {
 
   async disconnect() {
     try {
-      d("disconnecting...");
+      d("BLE: disconnecting...");
       clearInterval(this.healthCheckTimer);
       await this.machine.characteristic?.removeAllListeners();
       await this.machine.characteristic?.notify(false);
       await this.machine.characteristic?.unsubscribe();
       await this.machine.device?.disconnectAsync();
+      d("BLE: disconnected");
     } catch (error) {}
-    process.exit(0);
   }
 
   // commands
@@ -224,15 +226,22 @@ export class App {
     await this.sendCommand("machine_status", commands.machine_status);
   }
 
-  async heathCheck(): Promise<App> {
+  async heathCheck(): Promise<Cafy> {
     this.healthCheckTimer = setInterval(async () => {
-      await this.sendCommand("health_check", commands.health_check, null, 500);
+      if (this.machine?.characteristic) {
+        await this.sendCommand(
+          "health_check",
+          commands.health_check,
+          null,
+          500
+        );
+      }
     }, 5000);
 
     return this;
   }
 
-  async sync(): Promise<App> {
+  async sync(): Promise<Cafy> {
     d("command: sync");
 
     await this.sendCommand("get_parameters", commands.get_parameters);

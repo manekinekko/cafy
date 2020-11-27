@@ -1,5 +1,5 @@
 import debug from "debug";
-import { App } from "./classes/App";
+import { Cafy } from "./classes/Cafy";
 import { Appliance } from "./classes/Appliance";
 import { ApplianceManager } from "./classes/ApplianceManager";
 import { BeanSystem } from "./classes/BeanSystem";
@@ -18,7 +18,7 @@ const UByte = {
   MAX_VALUE: -1,
 };
 
-export function decode(app: App, bytes: Int8Array) {
+export function decode(app: Cafy, bytes: Int8Array) {
   const EcamUpdatesReceived = {
     beverageSavingResult(...args: any[]) {
       d("EcamUpdatesReceived.beverageSavingResult", args);

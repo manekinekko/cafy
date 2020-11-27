@@ -1,6 +1,6 @@
-import { App } from "./classes";
+import { Cafy } from "./classes";
 
 (async function () {
-  let app = new App();
+  let app = new Cafy();
   app = await app.heathCheck();
 })();
