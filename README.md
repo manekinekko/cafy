@@ -4,7 +4,7 @@ This is an experimental Node.js app to interact with the Primadonna Elite (ECAM6
 
 ### Disclaimer
 
-I own a Primadonna Elite (ECAM65075MS) and I created this app for my personal use. **The code shared in this project is for educational purposes only.**
+I own a Primadonna Elite (ECAM 650.75.MS) and I created this app for my personal use. **The code shared in this project is for educational purposes only.**
 
 The code is provided “as is”, without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall I (Wassim Chegham) or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the code or the use or other dealings in the code.
 
@@ -83,7 +83,80 @@ This project is still under development. Most of the work is being invested in u
 | Beverage Statistics           | TODO                  |
 | Profiles                      | TODO                  |
 | "My" Custom Beverage settings | TODO                  |
+| Monitor data                  | WIP                   |
 | Decoding machine responses    | [WIP](src/decoder.ts) |
+
+# Protocol
+
+## Request/Response Packet Format
+
+### Request Packet
+
+```text
+  00           01                      N             n-1               n
+┌────┬──────────────────────────┬──┬──┬──┬──┬──┬───────────────┬───────────────┐
+│ 0d │ request packet size (n)  │     data     │ checksum byte │ checksum byte │
+└────┴──────────────────────────┴──┴──┴──┴──┴──┴───────────────┴───────────────┘
+```
+
+### Response Packet
+
+```text
+  00           01                      N             n-1               n
+┌────┬──────────────────────────┬──┬──┬──┬──┬──┬───────────────┬───────────────┐
+│ d0 │ response packet size (n) │     data     │ checksum byte │ checksum byte │
+└────┴──────────────────────────┴──┴──┴──┴──┴──┴───────────────┴───────────────┘
+```
+
+### Checksum Algorithm
+
+TODO
+
+## Monitoring Data
+
+### Request Packet
+
+```text
+  00   01   02   03   04   05
+┌────┬────┬────┬────┬────┬────┐
+│ 0d │ 05 │ 75 │ 0f │ da │ 25 │
+└────┴────┴────┴────┴────┴────┘
+00= Request magic byte
+01= Request packet size
+02= Monitoring data type (T0=0x70, T1=0x75, T2=0x75)
+03= 0x0f (??)
+04= Checksum byte
+05= Checksum byte
+```
+
+### Response Packet
+
+```text
+  00   01   02   03   04   05   06   07   08   09   10   11   12   13   14   15   16   17   18
+┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
+│ d0 │ 12 │ 75 │ 0f │ 01 │ 01 │ 00 │ 08 │ 00 │ 00 │ 02 │ 00 │ 00 │ 00 │ 00 │ 00 │ 00 │ 7d │ 05 │
+└────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
+
+00= Response magic byte
+01= Response packet size
+02= Operation ID
+03= ??
+04= Accessory Present (00: no accessory, 01: water spout, 02: milk spout, 03: chocolate spout, 04: milk clean dial)
+05= ??
+06= ??
+07= ??
+08= ??
+09= ??
+10= Machine Model Id
+11= Dispensing Percentage
+12= ??
+13= ??
+14= ??
+15= Main Board Software Release
+16= ??
+17= Checksum byte
+18= Checksum byte
+```
 
 ## Troubleshooting
 
@@ -91,16 +164,16 @@ This project is still under development. Most of the work is being invested in u
 
 If you get the following error:
 
-```
+```text
 hci onSocketError: EPERM, Operation not permitted
 noble warning: adapter state unauthorized, please run as root or with sudo
                or see README for information on running without root/sudo:
                https://github.com/sandeepmistry/noble#running-on-linux
 ```
 
-You need toapply the following command:
+You need to apply the following command:
 
-```
+```bash
 sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
 ```
 
