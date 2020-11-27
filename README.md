@@ -95,7 +95,7 @@ This project is still under development. Most of the work is being invested in u
 ```text
   00           01                      N             n-1               n
 ┌────┬──────────────────────────┬──┬──┬──┬──┬──┬───────────────┬───────────────┐
-│ 0d │ request packet size (n)  │     data     │ checksum byte │ checksum byte │
+│ 0d │ request packet size (n)     │     data      │ checksum byte  │ checksum byte   │
 └────┴──────────────────────────┴──┴──┴──┴──┴──┴───────────────┴───────────────┘
 ```
 
@@ -104,7 +104,7 @@ This project is still under development. Most of the work is being invested in u
 ```text
   00           01                      N             n-1               n
 ┌────┬──────────────────────────┬──┬──┬──┬──┬──┬───────────────┬───────────────┐
-│ d0 │ response packet size (n) │     data     │ checksum byte │ checksum byte │
+│ d0 │ response packet size (n)    │     data      │ checksum byte   │ checksum byte  │
 └────┴──────────────────────────┴──┴──┴──┴──┴──┴───────────────┴───────────────┘
 ```
 
@@ -119,7 +119,7 @@ TODO
 ```text
   00   01   02   03   04   05
 ┌────┬────┬────┬────┬────┬────┐
-│ 0d │ 05 │ 75 │ 0f │ da │ 25 │
+│ 0d │ 05  │ 75 │ 0f │ da  │ 25 │
 └────┴────┴────┴────┴────┴────┘
 00= Request magic byte
 01= Request packet size
@@ -134,7 +134,7 @@ TODO
 ```text
   00   01   02   03   04   05   06   07   08   09   10   11   12   13   14   15   16   17   18
 ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
-│ d0 │ 12 │ 75 │ 0f │ 01 │ 01 │ 00 │ 08 │ 00 │ 00 │ 02 │ 00 │ 00 │ 00 │ 00 │ 00 │ 00 │ 7d │ 05 │
+│ d0 │ 12  │ 75 │ 0f  │ 01 │ 01 │ 00  │ 08 │ 00  │ 00 │ 02 │ 00  │ 00 │ 00 │ 00  │ 00 │ 00 │ 7d  │ 05 │
 └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
 
 00= Response magic byte
