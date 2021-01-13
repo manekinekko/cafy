@@ -97,7 +97,7 @@ Download Run in this directory:
 ```
 git clone https://github.com/manekinekko/node-ecam-coffee.git
 cd node-ecam-coffee
-docker-compose up
+docker-compose up -d
 ```
 The app will be running at [http://localhost:8080](http://localhost:8080), and the results will be at [http://localhost:8080](http://localhost:8080).
 
