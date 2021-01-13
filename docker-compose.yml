@@ -9,10 +9,10 @@ services:
         stdin_open: true # docker run -i
         tty: true        # docker run -t
         #restart: always
-        environment:    
+        environment:
             - PUID=1000
             - PGID=1000
-        #command: 
+        #command:
         ports:
             - 8080:8080
         volumes:
@@ -23,13 +23,13 @@ services:
             # Could be different, check your host
             #sudo ls -l /sys/class/bluetooth
             #sudo hcitool dev
-            - "/dev/ttyAMA0:/dev/ttyAMA0"   
+            - "/dev/ttyAMA0:/dev/ttyAMA0"
         network_mode: "host"
         cap_add:
             - NET_ADMIN
-    
- volumes:
+
+volumes:
     cafy-data:
     cafy-logs:
-    
+
 #networks

@@ -11,11 +11,9 @@ RUN npm install -g node-gyp
 #RUN npm install bluetooth-hci-socket
 RUN npm install @abandonware/bluetooth-hci-socket
 
-#COPY package*.json ./
 COPY . /usr/app
 RUN git clone https://github.com/manekinekko/node-ecam-coffee.git 
 WORKDIR /usr/app/node-ecam-coffee
-#RUN npm install prettier
 
 # RUN npm ci --only=production
 RUN npm install 
