@@ -4,12 +4,18 @@ import {
   Peripheral,
   startScanningAsync,
 } from "@abandonware/noble";
+import { BehaviorSubject } from "rxjs";
 import debug from "debug";
 import { commands } from "../commands";
 import { decode } from "../decoder";
 import { EcamManager } from "./EcamManager";
 import { Utils } from "./Utils";
 const d = debug("Cafy");
+
+export interface DeviceInfo {
+  name: string;
+  address: string;
+}
 
 export class Cafy {
   static SERVICE = "00035b03-58e6-07dd-021a-08123a000300";
@@ -25,8 +31,13 @@ export class Cafy {
   private readBuffer = new Int8Array();
   private writeBuffer: Buffer = Buffer.from([]);
 
+  /**
+   * @internal
+   */
+  private _selectedDevice: BehaviorSubject<DeviceInfo>;
+
   constructor() {
-    this.setupConnect();
+    this._selectedDevice = new BehaviorSubject({} as DeviceInfo);
   }
 
   sendCommand(
@@ -41,6 +52,8 @@ export class Cafy {
     d("                dec=", Utils.format(data, "dec"));
 
     return new Promise(async (resolve, reject) => {
+      // if we are trying to send commands before we finish connecting to the machine,
+      // let's defer the command for "sendCommandRetries" seconds.
       if (!this.machine?.characteristic) {
         d(
           `Warning: Trying to send packets but connection is not ready. Retrying... (${sendCommandRetries--})`
@@ -49,7 +62,7 @@ export class Cafy {
         if (sendCommandRetries <= 0) {
           d("Abort");
           await this.disconnect();
-          return;
+          process.exit(0);
         }
 
         setTimeout(
@@ -87,6 +100,7 @@ export class Cafy {
           this.writeBuffer = packet;
         } catch (err) {
           reject(err);
+          clearInterval(t);
         }
 
         if (packetIndex >= data.length) {
@@ -142,6 +156,10 @@ export class Cafy {
 
   private onPeripheralConnect() {
     d("BLE: device found");
+    this._selectedDevice.next({
+      name: this.machine.device?.advertisement.localName as string,
+      address: this.machine.device?.address as string,
+    });
   }
 
   private onPeripheralDisconnect() {
@@ -156,7 +174,7 @@ export class Cafy {
     d("BLE: scanning... done!");
   }
 
-  private async setupConnect() {
+  connect() {
     d("BLE: activating...");
 
     this.machine.characteristic?.removeAllListeners();
@@ -170,6 +188,8 @@ export class Cafy {
     process.on("uncaughtException", this.disconnect.bind(this));
     process.on("SIGUSR1", this.disconnect.bind(this));
     process.on("SIGUSR2", this.disconnect.bind(this));
+
+    return this._selectedDevice;
   }
 
   // callbacks
@@ -216,6 +236,8 @@ export class Cafy {
       await this.machine.characteristic?.notify(false);
       await this.machine.characteristic?.unsubscribe();
       await this.machine.device?.disconnectAsync();
+
+      this._selectedDevice.unsubscribe();
       d("BLE: disconnected");
     } catch (error) {}
   }
@@ -223,7 +245,7 @@ export class Cafy {
   // commands
 
   async machineStatus() {
-    await this.sendCommand("machine_status", commands.machine_status);
+    return await this.sendCommand("machine_status", commands.machine_status);
   }
 
   async heathCheck(): Promise<Cafy> {
@@ -247,6 +269,12 @@ export class Cafy {
     await this.sendCommand("get_parameters", commands.get_parameters);
     await this.sendCommand("machine_status", commands.machine_status);
     await this.sendCommand("get_profiles", commands.get_profiles);
+    return this;
+  }
+
+  async turnOn(): Promise<Cafy> {
+    d("command: turn on");
+    await this.sendCommand("turn_on", commands.turn_on);
     return this;
   }
 }

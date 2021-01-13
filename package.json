@@ -28,7 +28,8 @@
   "license": "MIT",
   "dependencies": {
     "@abandonware/noble": "^1.9.2-10",
-    "debug": "^4.3.1"
+    "debug": "^4.3.1",
+    "rxjs": "^6.6.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",

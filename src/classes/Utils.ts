@@ -111,14 +111,16 @@ export class Utils {
   }
 
   static checksum(bytes: Int8Array) {
-    let i = 7439;
-    for (let i2 = 0; i2 < bytes.length - 2; i2++) {
-      let i3 = (((i << 8) | (i >>> 8)) & 65535) ^ (bytes[i2] & -1);
-      let i4 = i3 ^ ((i3 & 255) >> 4);
-      let i5 = i4 ^ ((i4 << 12) & 65535);
-      i = i5 ^ (((i5 & 255) << 5) & 65535);
+    let crc = 0x1d0f;
+    for (let byteIndex = 0; byteIndex < bytes.length - 2; byteIndex++) {
+      let tmp =
+        (((crc << 8) | (crc >>> 8)) & 0xffff) ^ (bytes[byteIndex] & 0xff);
+      tmp = tmp ^ ((tmp & 0xff) >> 4);
+      tmp = tmp ^ ((tmp << 12) & 0xffff);
+      crc = tmp ^ (((tmp & 0xff) << 5) & 0xffff);
     }
-    return i & 65535;
+
+    return crc & 0xffff;
   }
 
   static retrieveSkuFromName(str: string) {
