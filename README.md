@@ -86,6 +86,22 @@ This project is still under development. Most of the work is being invested in u
 | Monitor data                  | WIP                   |
 | Decoding machine responses    | [WIP](src/decoder.ts) |
 
+
+
+# Running in Docker
+##Getting started
+Download [Docker Desktop](https://www.docker.com/products/docker-desktop) for Mac or Windows. [Docker Compose](https://docs.docker.com/compose) will be automatically installed. 
+On Linux, make sure you have the latest version of [Compose](https://docs.docker.com/compose/install/). 
+
+Download Run in this directory:
+```
+git clone https://github.com/manekinekko/node-ecam-coffee.git
+cd node-ecam-coffee
+docker-compose up
+```
+The app will be running at [http://localhost:8080](http://localhost:8080), and the results will be at [http://localhost:8080](http://localhost:8080).
+
+
 # Protocol
 
 ## Request/Response Packet Format
