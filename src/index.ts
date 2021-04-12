@@ -1,10 +1,10 @@
-import { Cafy } from "./classes";
-import { tap } from "rxjs/operators";
+import { Cafy, DeviceOptions } from "./classes";
 
-(async function () {
-  let cafy = new Cafy();
-  cafy
-    .connect()
-    .pipe(tap(async (device) => await cafy.machineStatus()))
-    .subscribe();
-})();
+let cafyInstance: Cafy | null = null;
+export function cafy(options?: DeviceOptions) {
+  if (!cafyInstance) {
+    cafyInstance = new Cafy(options);
+  }
+  return cafyInstance;
+}
+export { commands } from "./commands";
