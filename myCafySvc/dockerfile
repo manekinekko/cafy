@@ -1,0 +1,22 @@
+FROM node:current-alpine
+LABEL maintainer="yourMail@yourHost.com"
+
+WORKDIR /usr/app
+
+RUN apk add --no-cache python3 py3-pip alpine-sdk git
+#RUN npm install git 
+RUN npm install noble
+RUN npm install prettier
+RUN npm install -g node-gyp
+#RUN npm install bluetooth-hci-socket
+RUN npm install @abandonware/bluetooth-hci-socket
+
+COPY . /usr/app
+RUN git clone https://github.com/manekinekko/node-ecam-coffee.git 
+WORKDIR /usr/app/node-ecam-coffee
+
+# RUN npm ci --only=production
+RUN npm install 
+
+EXPOSE 8080
+CMD ["npm", "start"]
