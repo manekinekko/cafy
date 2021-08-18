@@ -1,0 +1,27 @@
+<button id="button-connect">Connect</button>
+<button id="button-disconnect">Disconnect</button>
+<pre id="connect-log"></pre>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io();
+  var btnConnect = document.querySelector("#button-connect");
+  var btnDisconnect = document.querySelector("#button-disconnect");
+  var connectLog = document.querySelector("#connect-log");
+  var statusLog = document.querySelector("#status-log");
+  var logs = [];
+
+  socket.emit("machine-status");
+
+  btnConnect.addEventListener("click", async (evt) => {
+    socket.emit("machine-connect");
+  });
+  btnDisconnect.addEventListener("click", async (evt) => {
+    socket.emit("machine-disconnect");
+  });
+
+  socket.on("machine-response", function (msg) {
+    logs.push(JSON.stringify(msg));
+    connectLog.innerHTML = logs.join("\n");
+  });
+</script>

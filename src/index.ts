@@ -1,6 +1,10 @@
-import { Cafy } from "./classes";
+import { Cafy, DeviceOptions } from "./classes";
 
-(async function () {
-  let app = new Cafy();
-  app = await app.heathCheck();
-})();
+let cafyInstance: Cafy | null = null;
+export function cafy(options?: DeviceOptions) {
+  if (!cafyInstance) {
+    cafyInstance = new Cafy(options);
+  }
+  return cafyInstance;
+}
+export { commands } from "./commands";

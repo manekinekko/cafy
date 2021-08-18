@@ -4,12 +4,27 @@ import {
   Peripheral,
   startScanningAsync,
 } from "@abandonware/noble";
+import { BehaviorSubject } from "rxjs";
 import debug from "debug";
 import { commands } from "../commands";
 import { decode } from "../decoder";
 import { EcamManager } from "./EcamManager";
 import { Utils } from "./Utils";
 const d = debug("Cafy");
+
+export interface DeviceInfo {
+  name: string;
+  address: string;
+}
+
+export interface DeviceStatus {
+  status: "CONNECTED" | "DISCONNECTED";
+}
+
+export interface DeviceOptions {
+  address?: string;
+  name?: string;
+}
 
 export class Cafy {
   static SERVICE = "00035b03-58e6-07dd-021a-08123a000300";
@@ -25,8 +40,18 @@ export class Cafy {
   private readBuffer = new Int8Array();
   private writeBuffer: Buffer = Buffer.from([]);
 
-  constructor() {
-    this.setupConnect();
+  /**
+   * @internal
+   */
+  private _deviceSatus: BehaviorSubject<DeviceStatus>;
+  private _option: DeviceOptions | undefined;
+
+  constructor(option?: DeviceOptions) {
+    this._deviceSatus = new BehaviorSubject({
+      status: "DISCONNECTED",
+    } as DeviceStatus);
+
+    this._option = option;
   }
 
   sendCommand(
@@ -41,6 +66,8 @@ export class Cafy {
     d("                dec=", Utils.format(data, "dec"));
 
     return new Promise(async (resolve, reject) => {
+      // if we are trying to send commands before we finish connecting to the machine,
+      // let's defer the command for "sendCommandRetries" seconds.
       if (!this.machine?.characteristic) {
         d(
           `Warning: Trying to send packets but connection is not ready. Retrying... (${sendCommandRetries--})`
@@ -49,7 +76,7 @@ export class Cafy {
         if (sendCommandRetries <= 0) {
           d("Abort");
           await this.disconnect();
-          return;
+          process.exit(0);
         }
 
         setTimeout(
@@ -87,6 +114,7 @@ export class Cafy {
           this.writeBuffer = packet;
         } catch (err) {
           reject(err);
+          clearInterval(t);
         }
 
         if (packetIndex >= data.length) {
@@ -109,39 +137,63 @@ export class Cafy {
     }
   }
 
-  private async onDiscover(peripheral: Peripheral) {
-    this.machine.device = peripheral;
+  private onDiscover(resolve: Function, reject: Function) {
+    return async (peripheral: Peripheral) => {
+      const address = peripheral.address.replace(/\-/g, "").toLowerCase();
+      if (
+        this._option?.address &&
+        address !== this._option?.address.toLowerCase()
+      ) {
+        return;
+      }
+      if (
+        this._option?.name &&
+        peripheral?.advertisement.localName !== this._option?.name
+      ) {
+        return;
+      }
+      this.machine.device = peripheral;
 
-    peripheral.on("connect", this.onPeripheralConnect.bind(this));
-    peripheral.on("disconnect", this.onPeripheralDisconnect.bind(this));
+      peripheral.on(
+        "connect",
+        this.onPeripheralConnect(resolve, reject).bind(this)
+      );
+      peripheral.on("disconnect", this.onPeripheralDisconnect.bind(this));
 
-    // await stopScanningAsync();
-    await peripheral.connectAsync();
-    EcamManager.onMachineFound(peripheral, new Int8Array());
+      // await stopScanningAsync();
+      await peripheral.connectAsync();
+      EcamManager.onMachineFound(peripheral, new Int8Array());
 
-    const {
-      characteristics,
-    } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(
-      [Cafy.SERVICE],
-      [Cafy.CHARACTERISTIC]
-    );
-    const characteristic = characteristics[0];
-    this.machine.characteristic = characteristic;
+      const {
+        characteristics,
+      } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(
+        [Cafy.SERVICE],
+        [Cafy.CHARACTERISTIC]
+      );
+      const characteristic = characteristics[0];
+      this.machine.characteristic = characteristic;
 
-    const { uuid, type, properties } = characteristic;
-    d("characteristic found");
-    d(" - UUID      ", uuid);
-    d(" - Properties", properties);
+      const { uuid, type, properties } = characteristic;
+      d("characteristic found");
+      d(" - UUID      ", uuid);
+      d(" - Properties", properties);
 
-    characteristic.on("data", this.onCharacteristicData.bind(this));
-    characteristic.on("notify", this.onCharacteristicNotify.bind(this));
-    characteristic.on("read", this.onCharacteristicRead.bind(this));
-    characteristic.on("write", this.onCharacteristicWrite.bind(this));
-    characteristic.notify(true); // enable indication
+      characteristic.on("data", this.onCharacteristicData.bind(this));
+      characteristic.on("notify", this.onCharacteristicNotify.bind(this));
+      characteristic.on("read", this.onCharacteristicRead.bind(this));
+      characteristic.on("write", this.onCharacteristicWrite.bind(this));
+      characteristic.notify(true); // enable indication
+    };
   }
 
-  private onPeripheralConnect() {
-    d("BLE: device found");
+  private onPeripheralConnect(resolve: Function, _reject: Function) {
+    return () => {
+      d("BLE: device found");
+      resolve({
+        name: this.machine.device?.advertisement.localName as string,
+        address: this.machine.device?.address as string,
+      });
+    };
   }
 
   private onPeripheralDisconnect() {
@@ -156,20 +208,38 @@ export class Cafy {
     d("BLE: scanning... done!");
   }
 
-  private async setupConnect() {
+  status$() {
+    if (this.machine.device) {
+      this._deviceSatus.next({ status: "CONNECTED" });
+    } else {
+      this._deviceSatus.next({ status: "DISCONNECTED" });
+    }
+    return this._deviceSatus;
+  }
+
+  connect() {
     d("BLE: activating...");
 
-    this.machine.characteristic?.removeAllListeners();
+    process.on("SIGINT", this.registerProcessExit.bind(this));
+    process.on("uncaughtException", this.registerProcessExit.bind(this));
+    process.on("SIGUSR1", this.registerProcessExit.bind(this));
+    process.on("SIGUSR2", this.registerProcessExit.bind(this));
 
-    on("stateChange", this.onStateChange.bind(this));
-    on("discover", this.onDiscover.bind(this));
-    on("scanStart", this.onScanStart.bind(this));
-    on("scanStop", this.onScanStop.bind(this));
+    return new Promise((resolve, reject) => {
+      this.machine.characteristic?.removeAllListeners();
 
-    process.on("SIGINT", this.disconnect.bind(this));
-    process.on("uncaughtException", this.disconnect.bind(this));
-    process.on("SIGUSR1", this.disconnect.bind(this));
-    process.on("SIGUSR2", this.disconnect.bind(this));
+      on("stateChange", this.onStateChange.bind(this));
+      on("discover", this.onDiscover(resolve, reject).bind(this));
+      on("scanStart", this.onScanStart.bind(this));
+      on("scanStop", this.onScanStop.bind(this));
+
+      this._deviceSatus.next({ status: "CONNECTED" });
+    });
+  }
+
+  private registerProcessExit() {
+    this.disconnect();
+    process.exit(0);
   }
 
   // callbacks
@@ -216,14 +286,21 @@ export class Cafy {
       await this.machine.characteristic?.notify(false);
       await this.machine.characteristic?.unsubscribe();
       await this.machine.device?.disconnectAsync();
+
+      this._deviceSatus.next({ status: "DISCONNECTED" });
       d("BLE: disconnected");
-    } catch (error) {}
+
+      return Promise.resolve({ status: "DISCONNECTED" });
+    } catch (error) {
+      d("BLE: error", { error });
+      return Promise.reject({ error });
+    }
   }
 
   // commands
 
   async machineStatus() {
-    await this.sendCommand("machine_status", commands.machine_status);
+    return await this.sendCommand("machine_status", commands.machine_status);
   }
 
   async heathCheck(): Promise<Cafy> {
@@ -247,6 +324,12 @@ export class Cafy {
     await this.sendCommand("get_parameters", commands.get_parameters);
     await this.sendCommand("machine_status", commands.machine_status);
     await this.sendCommand("get_profiles", commands.get_profiles);
+    return this;
+  }
+
+  async turnOn(): Promise<Cafy> {
+    d("command: turn on");
+    await this.sendCommand("turn_on", commands.turn_on);
     return this;
   }
 }
